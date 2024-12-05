@@ -39,6 +39,18 @@ def validar_cantidad(cantidad):
   
   return int(cantidad)
 
+def validar_precio(precio):
+
+  while not precio.isdigit():
+    print("El PRECIO debe ser un número.")
+    precio = input("Ingrese el precio del producto: $")
+  
+  while float(precio) <= 0:
+    print("Debe ser un número positivo.")
+    precio = float(input("Ingrese nuevamente el precio del producto: $"))
+  
+  return float(precio)
+
 #Funcion para agregar un producto
 def ingreso_datos():
    producto=[]
@@ -48,7 +60,8 @@ def ingreso_datos():
    producto.append(input("Ingrese la descripcion del producto:_ "))
    cantidad = input("Ingrese la cantidad del producto:_ ")
    producto.append(validar_cantidad(cantidad))   
-   producto.append(float(input("Ingrese el precio del producto:_ ")))
+   precio = input("Ingrese el precio del producto:_ ")
+   producto.append(validar_precio(precio))
    categoria = input("Ingrese la categoria del producto:")
    producto.append(validar_nombre(categoria))
    return producto
