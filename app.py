@@ -123,9 +123,29 @@ def mostrar_productos():
    cursor = conn.cursor()
    cursor.execute("SELECT * FROM productos")
    productos = cursor.fetchall()
-   for fila in productos:
-      print(fila)
-
+   
+   # Obtener los nombres de las columnas
+   columnas = [descripcion[0] for descripcion in cursor.description]
+    
+   # Encontrar el ancho máximo de cada columna
+   anchos = [len(col) for col in columnas]
+   for producto in productos:
+         for i, dato in enumerate(producto):
+            if len(str(dato)) > anchos[i]:
+               anchos[i] = len(str(dato))
+    
+   # Imprimir los títulos de las columnas con ancho variable
+   for i, col in enumerate(columnas):
+        print(f"\033[0m {col.ljust(anchos[i])}", end=" ")
+   print()
+   print("-" * (sum(anchos) + len(anchos) * 4))
+    
+   # Imprimir los datos con ancho variable
+   for producto in productos:
+        for i, dato in enumerate(producto):
+            print(f"{str(dato).ljust(anchos[i])}", end="  ")
+        print()
+   print("\033[34m")
    conn.close()
 
 def actualizar_cantidad():
@@ -201,10 +221,10 @@ def reporte_bajo_stock():
 def menu():
   print("\033[34m")
   while True:
-    print("\n--------------------------------------")
-    print("\tMENU PRINCIPAL:")
-    print("--------------------------------------")
-    print("1. Agregar producto")
+    print("-" * 35,end="" )
+    print("\n\tMENU PRINCIPAL:")
+    print("-" * 35,end="")
+    print("\n1. Agregar producto")
     print("2. Mostrar productos")
     print("3. Actualizar cantidad de productos")
     print("4. Eliminar producto")
