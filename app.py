@@ -105,17 +105,22 @@ def ingreso_datos():
 
 #Funcion para agregar un producto a la base de datos
 def agregar_producto(producto):
-    conn = sqlite3.connect('inventario.db')
-    cursor = conn.cursor()
-    print("\033[37m")
-    
-    if producto is not None:
-        cursor.execute("INSERT INTO productos (nombre,descripcion,cantidad,precio,categoria) VALUES (?,?,?,?,?)",
-                    producto)
-        conn.commit()
-        conn.close()
-    else:
-        print("Producto NO GUARDADO en la base de datos")
+   conn = sqlite3.connect('inventario.db')
+   cursor = conn.cursor()
+   print("\033[37m")
+   try:
+       
+      if producto is not None:
+         cursor.execute("INSERT INTO productos (nombre,descripcion,cantidad,precio,categoria) VALUES (?,?,?,?,?)",
+                     producto)
+      else:
+         print("Producto NO GUARDADO en la base de datos")
+   except sqlite3.Error as e:
+        print(f"Error al acceder a la base de datos: {e}")
+   finally:
+      if conn:
+         conn.commit()
+         conn.close()
 
 def mostrar_productos():
    #mostrar todos los productos de la base
