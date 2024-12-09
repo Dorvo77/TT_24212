@@ -13,25 +13,30 @@ CATEGORIA = {"1":"Teclado",
              "12":"Notebook",
              "13":"Otros."}
 STOCK_MINIMO = int(10)
-
+#fuyncion para crear la base de datos y la tabla productos
 def crear_base_datos():
-    conn = sqlite3.connect('inventario.db')
-    cursor = conn.cursor()
-
-    # Crear tabla de alumnosproductos
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS productos (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            nombre TEXT NOT NULL,
-            descripcion TEXT,
-            cantidad INTEGER NOT NULL,
-            precio FLOAT NOT NULL,
-            categoria TEXT
-        )
-    ''')
-
-    conn.commit()
-    conn.close()
+    
+   conn = sqlite3.connect('inventario.db')
+   cursor = conn.cursor()
+   try:
+      # Crear tabla de alumnosproductos
+      cursor.execute('''
+         CREATE TABLE IF NOT EXISTS productos (
+               id INTEGER PRIMARY KEY AUTOINCREMENT,
+               nombre TEXT NOT NULL,
+               descripcion TEXT,
+               cantidad INTEGER NOT NULL,
+               precio FLOAT NOT NULL,
+               categoria TEXT
+         )
+      ''')
+   except sqlite3 .Error as e:
+      print(f"Error al crear la base de datos: {e}")
+   finally:
+      if conn:
+         conn.commit()
+         conn.close()
+#retorna true o false si esta en blanco o con espacio
 def nombre_en_blanco(nombre):
    return nombre.strip() != ""
 
@@ -69,13 +74,13 @@ def seleccion_categoria():    #funcion para seleccionar una categoria definida e
   while True:
 
     print("Seleccione una categoria")
-    for key, value in CATEGORIA.items():
+    for key, value in CATEGORIA.items(): #imprime las categorias en 2 columnas
       if int(key) % 2 == 0:
         print(f"\033[35m \t{key}. {value}")
       else:
         print(f"\033[35m \t{key}. {value}", end="")
     categoria = input("\nIngrese el numero de la categoria: ")
-    if categoria in CATEGORIA:
+    if categoria in CATEGORIA: #validacion que ingreso una categoria existente.
         print("\033[34m")
         return CATEGORIA[categoria]
 
@@ -126,8 +131,14 @@ def mostrar_productos():
    #mostrar todos los productos de la base
    conn = sqlite3.connect('inventario.db')
    cursor = conn.cursor()
-   cursor.execute("SELECT * FROM productos")
-   productos = cursor.fetchall()
+   try:
+      cursor.execute("SELECT * FROM productos")
+      productos = cursor.fetchall()
+   except sqlite3.Error as e:
+      print(f"Error al acceder a la base de datos: {e}")
+   finally:
+      if conn:
+         conn.close()
    
    # Obtener los nombres de las columnas
    columnas = [descripcion[0] for descripcion in cursor.description]
@@ -151,40 +162,49 @@ def mostrar_productos():
             print(f"{str(dato).ljust(anchos[i])}", end="  ")
         print()
    print("\033[34m")
-   conn.close()
+   
 
 def actualizar_cantidad():
-    #actualizar cantidad por el nombre del producto
-    conn = sqlite3.connect('inventario.db')
-    cursor = conn.cursor()
-    nombre = validar_nombre(input("\033[0m Ingrese el nombre del producto a actualizar: "))
-    cantidad = validar_cantidad(input("Ingrese la nueva cantidad del producto: "))
-    cursor.execute("UPDATE productos SET cantidad = ? WHERE nombre = ?", (cantidad, nombre))
+   #actualizar cantidad por el nombre del producto
+   conn = sqlite3.connect('inventario.db')
+   cursor = conn.cursor()
+   nombre = validar_nombre(input("\033[0m Ingrese el nombre del producto a actualizar: "))
+   cantidad = validar_cantidad(input("Ingrese la nueva cantidad del producto: "))
+   try:
+      cursor.execute("UPDATE productos SET cantidad = ? WHERE nombre = ?", (cantidad, nombre))
     # Comprobar si se actualizó algún registro
-    if cursor.rowcount > 0:
-      print(f"El producto {nombre} se ha actualizado a {cantidad}.")
-    else:
-      print(f"No se encontró ningún producto con el nombre {nombre}.")
-
-    print("\033[34m")
-    conn.commit()
-    conn.close()
-
+      if cursor.rowcount > 0:
+         print(f"El producto {nombre} se ha actualizado a {cantidad}.")
+      else:
+         print(f"No se encontró ningún producto con el nombre {nombre}.")
+   except sqlite3.Error as e:
+      print(f"Error al actualizar la base de datos: {e}")
+   finally:
+      if conn:
+         conn.commit()
+         conn.close()
+   print("\033[34m")
+   
 def eliminar_producto(id):
    #Eliminar un producto de la base de datos por us ID
    conn = sqlite3.connect('inventario.db')
    cursor = conn.cursor()
-   
-   cursor.execute("DELETE FROM productos WHERE id = ?", (id,))
-   # Comprobar si se eliminó algún registro
-   if cursor.rowcount > 0:
-      print("\033[32m")
-      print(f"El producto con ID {id} se ha eliminado con éxito.")
-   else:
-      print("\033[31m")
-      print(f"No se encontró ningún producto con el ID {id}.")
-   conn.commit()
-   conn.close()
+   try:
+      cursor.execute("DELETE FROM productos WHERE id = ?", (id,))
+      # Comprobar si se eliminó algún registro
+      if cursor.rowcount > 0:
+         print("\033[32m")
+         print(f"El producto con ID {id} se ha eliminado con éxito.")
+      else:
+         print("\033[31m")
+         print(f"No se encontró ningún producto con el ID {id}.")
+   except sqlite3.Error as e:
+      print(f"Error al eliminar la base de datos: {e}")
+   finally:
+      if conn:
+         conn.commit()
+         conn.close()
+
    print("\033[34m")
 
 def buscar_producto():
@@ -192,36 +212,44 @@ def buscar_producto():
    conn = sqlite3.connect('inventario.db')
    cursor = conn.cursor()
    nombre = validar_nombre(input("\033[0m Ingrese el nombre del producto a buscar:")) #valida que no este en blanco
-   cursor.execute("SELECT * FROM productos WHERE nombre = ?", (nombre,))
-   producto = cursor.fetchone()
-   if producto: # si encuentra el producto lo imprime en pantalla
-      #color verde
-      print("\033[32m")
-      print(f"Nombre:{producto[1]} | Cantidad:{producto[3]} | Precio:{producto[4]} | Categoria:{producto[5]}")
-   else:
-      print("\033[31m") #color rojo
-      print(f"No se encontró ningún producto con el nombre {nombre}.")
+   try:
 
+      cursor.execute("SELECT * FROM productos WHERE nombre = ?", (nombre,))
+      producto = cursor.fetchone()
+      if producto: # si encuentra el producto lo imprime en pantalla
+         #color verde
+         print("\033[32m")
+         print(f"Nombre:{producto[1]} | Cantidad:{producto[3]} | Precio:{producto[4]} | Categoria:{producto[5]}")
+      else:
+         print("\033[31m") #color rojo
+         print(f"No se encontró ningún producto con el nombre {nombre}.")
+   except sqlite3.Error as e:
+      print(f"Error al buscar la base de datos: {e}")
+   finally:
+      if conn:
+         conn.close()
    print("\033[34m")
-   conn.close()
-
 
 def reporte_bajo_stock():
-    #reporte de productos con stock bajo
-    conn = sqlite3.connect('inventario.db')
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM productos WHERE cantidad < ?",(STOCK_MINIMO,))
-    productos = cursor.fetchall()
-    if productos:
-        print("\033[31m")
-        print("\t****** PRODUCTOS BAJO STOCK ******")
-        for producto in productos:
+   #reporte de productos con stock bajo
+   conn = sqlite3.connect('inventario.db')
+   cursor = conn.cursor()
+   try:
+      cursor.execute("SELECT * FROM productos WHERE cantidad < ?",(STOCK_MINIMO,))
+      productos = cursor.fetchall()
+      if productos:
+         print("\033[31m")
+         print("\t****** PRODUCTOS BAJO STOCK ******")
+         for producto in productos:
             print(f"\tNombre: {producto[1]} | Cantidad: {producto[3]} | Categoria: {producto[5]}.")
-    else:
-        print("No hay productos con stock bajo.")
-    print("\033[34m")
-    conn.close()
-
+      else:
+         print("No hay productos con stock bajo.")
+   except sqlite3.Error as e:
+      print(f"Error al buscar la base de datos: {e}")
+   finally:
+      if conn:
+         conn.close()
+   print("\033[34m")
 
 def menu():
   print("\033[34m")
