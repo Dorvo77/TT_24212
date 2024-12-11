@@ -1,6 +1,6 @@
 ## Descripción - Proyecto Final Integrador
 
-Esta aplicación de Python está diseñada para gestionar de manera eficiente el inventario de **compnentes de computacion**. Proporciona funcionalidades como:
+Esta aplicación de Python está diseñada para gestionar de manera eficiente el inventario de **componentes de computacion**. Proporciona funcionalidades como:
 
 * **Ingreso de nuevos productos:** Agregar productos al inventario con sus respectivos detalles (nombre, descripción, cantidad, etc.).
 * **Muestra listado de productos:** Mostrar listado de productos del inventario. (Consultando a la base de datos.).
