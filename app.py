@@ -109,15 +109,15 @@ def ingreso_datos():
       return None
 
 #Funcion para agregar un producto a la base de datos
-def agregar_producto(producto):
+def db_insertar_producto(producto):
    conn = sqlite3.connect('inventario.db')
    cursor = conn.cursor()
+   query = "INSERT INTO productos (nombre,descripcion,cantidad,precio,categoria) VALUES (?,?,?,?,?)"
    print("\033[37m")
    try:
        
       if producto is not None:
-         cursor.execute("INSERT INTO productos (nombre,descripcion,cantidad,precio,categoria) VALUES (?,?,?,?,?)",
-                     producto)
+         cursor.execute(query, producto)
       else:
          print("Producto NO GUARDADO en la base de datos")
    except sqlite3.Error as e:
@@ -127,7 +127,7 @@ def agregar_producto(producto):
          conn.commit()
          conn.close()
 
-def mostrar_productos():
+def db_mostrar_productos():
    #mostrar todos los productos de la base
    conn = sqlite3.connect('inventario.db')
    cursor = conn.cursor()
@@ -168,10 +168,11 @@ def actualizar_cantidad():
    #actualizar cantidad por el nombre del producto
    conn = sqlite3.connect('inventario.db')
    cursor = conn.cursor()
+   query = "UPDATE productos SET cantidad = ? WHERE nombre = ?"
    nombre = validar_nombre(input("\033[0m Ingrese el nombre del producto a actualizar: "))
-   cantidad = validar_cantidad(input("Ingrese la nueva cantidad del producto: "))
+   cantidad = validar_cantidad(input("Ingrese la nueva cantidad del producto: ")) #llama a la función validar_cantidad
    try:
-      cursor.execute("UPDATE productos SET cantidad = ? WHERE nombre = ?", (cantidad, nombre))
+      cursor.execute(query, (cantidad, nombre))
     # Comprobar si se actualizó algún registro
       if cursor.rowcount > 0:
          print(f"El producto {nombre} se ha actualizado a {cantidad}.")
@@ -185,12 +186,13 @@ def actualizar_cantidad():
          conn.close()
    print("\033[34m")
    
-def eliminar_producto(id):
+def db_eliminar_producto(id):
    #Eliminar un producto de la base de datos por us ID
    conn = sqlite3.connect('inventario.db')
    cursor = conn.cursor()
+   query = "DELETE FROM productos WHERE id = ?"
    try:
-      cursor.execute("DELETE FROM productos WHERE id = ?", (id,))
+      cursor.execute(query, (id,))
       # Comprobar si se eliminó algún registro
       if cursor.rowcount > 0:
          print("\033[32m")
@@ -207,14 +209,15 @@ def eliminar_producto(id):
 
    print("\033[34m")
 
-def buscar_producto():
+def db_buscar_producto():
    #buscar un producto por nombre
    conn = sqlite3.connect('inventario.db')
    cursor = conn.cursor()
+   query = "SELECT * FROM productos WHERE nombre = ?"
    nombre = validar_nombre(input("\033[0m Ingrese el nombre del producto a buscar:")) #valida que no este en blanco
    try:
 
-      cursor.execute("SELECT * FROM productos WHERE nombre = ?", (nombre,))
+      cursor.execute(query, (nombre,))
       producto = cursor.fetchone()
       if producto: # si encuentra el producto lo imprime en pantalla
          #color verde
@@ -234,8 +237,9 @@ def reporte_bajo_stock():
    #reporte de productos con stock bajo
    conn = sqlite3.connect('inventario.db')
    cursor = conn.cursor()
+   query = "SELECT * FROM productos WHERE cantidad < ? ORDER BY cantidad"
    try:
-      cursor.execute("SELECT * FROM productos WHERE cantidad < ?",(STOCK_MINIMO,))
+      cursor.execute(query,(STOCK_MINIMO,)) #variable STOCK_MINIMO creada al principio
       productos = cursor.fetchall()
       if productos:
          print("\033[31m")
@@ -267,17 +271,17 @@ def menu():
 
     opcion = input("\nSeleccione una opción: ")
     if opcion == "1":
-      campos_producto =ingreso_datos()
-      agregar_producto(campos_producto)
+      campos_producto =ingreso_datos() #guardo los datos del produccto en una lista
+      db_insertar_producto(campos_producto) #llamo a la función para agregar el producto
     elif opcion == "2":
-      mostrar_productos()
+      db_mostrar_productos()
     elif opcion == "3":
        actualizar_cantidad()
     elif opcion == "4":
        id = validar_cantidad(input("\033[0m Ingrese el ID del producto a eliminar:")) #utilizo validar_cantidad para validar el ID
-       eliminar_producto(id)
+       db_eliminar_producto(id)
     elif opcion == "5":
-       buscar_producto()
+       db_buscar_producto()
     elif opcion == "6":
        reporte_bajo_stock()
     elif opcion == "7":
